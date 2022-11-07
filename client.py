@@ -3,15 +3,27 @@ import socket
 HEADERSIZE = 1000
 
 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-s.bind((socket.gethostname(), 2134))
-s.listen(5)
+s.connect((socket.gethostname(), 2134))
 
 while True:
-    clientsocket, address = s.accept()
-    print(f"Connection from {address} has been estabilished!")
+    full_msg = ''
+    new_msg = True
+    while True:
+        msg = s.recv(1024)
+        if new_msg:
+            print(f"new messege length: {msg[:HEADERSIZE]}")
+            msglen = int(msg[:HEADERSIZE])
+            new_msg = False
 
-    msg = "Welcome to the server!"
-    msg = f'{len(msg):<{HEADERSIZE}}' + msg
 
-    clientsocket.send(bytes(msg, "utf-8"))
-    #clientsocket.close()
+
+        full_msg += msg.decode("utf-8")
+
+        if len(full_msg) - HEADERSIZE == msglen:
+            print("full msg recieved")
+            print(full_msg[HEADERSIZE:])
+            new_msg = True
+            full_msg = ''
+
+    print(full_msg)
+
